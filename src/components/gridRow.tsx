@@ -8,6 +8,7 @@ type GridRowProps = {
     items?: Item[],
     group?: Group,
     requestItemSelect?: (item: Item) => Boolean
+    reportSelect?: () => void
 };
 
 function GridRow(props: GridRowProps): ReactElement {
@@ -36,7 +37,12 @@ function GridRow(props: GridRowProps): ReactElement {
     return (
         <div className="grid-row">
             {props.items?.map((item, i) => {
-                return <Square item={item} requestItemSelect={props.requestItemSelect!} key={i} />
+                return <Square
+                    item={item}
+                    requestItemSelect={props.requestItemSelect!}
+                    reportSelect={props.reportSelect!}
+                    key={i}
+                />
             })}
         </div>
     );

@@ -6,26 +6,20 @@ import type { GameState, Group, Item } from "../types";
 
 type GridProps = {
     gameState: GameState,
-    pokeNum: number
+    pokeNum: number,
+    activateButton: (buttonName: string) => void,
+    deactivateButton: (buttonName: string) => void
 };
 
 function Grid(props: GridProps): ReactElement {
     const finishedGroups: Group[] = [];
-    // const looseItems: Item[] = [];
     props.gameState.groups.forEach((group) => {
         if (group.finished) {
             finishedGroups.push(group);
-        } else {
-            // looseItems.push(...group.items);
         }
     });
-    // shuffleInPlace(looseItems);
-    // const looseItemsByRow: Item[][] = [];
-    // for (let i = 0; i < looseItems.length; i += 4) {
-    //     looseItemsByRow.push(looseItems.slice(i, i + 4));
-    // }
 
-    const requestItemSelect = (): Boolean => {
+    const countSelected = (): number => {
         let nSelected = 0;
         props.gameState.looseItemsByRow.forEach((row) => {
             row.forEach((item) => {
@@ -34,9 +28,20 @@ function Grid(props: GridProps): ReactElement {
                 }
             })
         });
-        console.log(nSelected + " selected");
-        return nSelected < 4;
+        return nSelected;
     };
+
+    const requestItemSelect = (): Boolean => {
+        return countSelected() < 4;
+    };
+
+    const reportSelect = (): void => {
+        if (countSelected() === 4) {
+            props.activateButton("submit");
+        } else {
+            props.deactivateButton("submit");
+        }
+    }
 
     return (
         <div className="grid">
@@ -48,6 +53,7 @@ function Grid(props: GridProps): ReactElement {
                     finished={false}
                     items={items}
                     requestItemSelect={requestItemSelect}
+                    reportSelect={reportSelect}
                     key={i} 
                 />
             })}

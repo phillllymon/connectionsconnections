@@ -5,6 +5,7 @@ import type { Item } from "../types";
 type SquareProps = {
     item: Item,
     requestItemSelect: (item: Item) => Boolean
+    reportSelect: () => void
 };
 
 function Square(props: SquareProps): ReactElement {
@@ -58,10 +59,15 @@ function Square(props: SquareProps): ReactElement {
                 });
             }
         }
+        props.reportSelect();
     }
 
     return (
-        <div className={className} onClick={handleSelect}>
+        <div
+            className={className}
+            onClick={handleSelect}
+            id={props.item.id.toString()}
+        >
             <div style={{transform: `scale(${scale})`}}>
                 {props.item.label.toUpperCase()}
             </div>

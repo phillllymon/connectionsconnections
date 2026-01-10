@@ -36,6 +36,7 @@
     font-size: 4vw;
     justify-content: center;
     align-items: center;
+    box-shadow: 2px 2px 12px -8px rgb(136, 136, 136);
 }
 
 .square-selected {
@@ -75,15 +76,19 @@
 
 .finished-green {
     background-color: rgb(43, 201, 43);
+    box-shadow: 2px 2px 12px -6px rgb(43, 201, 43);
 }
 .finished-yellow {
     background-color: rgb(224, 224, 53);
+    box-shadow: 2px 2px 12px -6px rgb(224, 224, 53);
 }
 .finished-purple {
     background-color: rgb(167, 94, 167);
+    box-shadow: 2px 2px 12px -6px rgb(167, 94, 167);
 }
 .finished-blue {
     background-color: rgb(111, 173, 231);
+    box-shadow: 2px 2px 12px -6px rgb(111, 173, 231);
 }
 
 .game-controls-bar {
@@ -105,6 +110,12 @@
     padding-right: 3vw;
     padding-left: 3vw;
     border-radius: 5vw;
+    box-shadow: 2px 2px 12px 0px rgb(177, 177, 177);
+}
+
+.button-inactive {
+    opacity: 0.3;
+    box-shadow: none;
 }
 
 .guesses-bar {
@@ -126,4 +137,31 @@
 
 .ghost-guess {
     background-color: rgb(255, 255, 255);
+}
+
+.game-alert-box {
+    position: fixed;
+    top: 0%;
+    left: 50%;
+    transform: translate(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.game-alert {
+    height: 10vw;
+    /* width: 30vw; */
+    background-color: black;
+    color: white;
+    font-weight: 700;
+    padding-right: 3vw;
+    padding-left: 3vw;
+    border-radius: 5vw;
+    margin-top: 2vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 12px 1px rgb(177, 177, 177);
 }

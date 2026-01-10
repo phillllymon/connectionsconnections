@@ -7,3 +7,13 @@ export function shuffleInPlace(arr: any[]) {
         }
     });
 }
+
+export function arrDeleteVal(arr: any[], val: any): any[] {
+    const answer: any[] = [];
+    arr.forEach((ele) => {
+        if (ele !== val) {
+            answer.push(ele);
+        }
+    });
+    return answer;
+}
