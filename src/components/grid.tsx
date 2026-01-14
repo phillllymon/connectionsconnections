@@ -7,8 +7,7 @@ import type { GameState, Group, Item } from "../types";
 type GridProps = {
     gameState: GameState,
     pokeNum: number,
-    activateButton: (buttonName: string) => void,
-    deactivateButton: (buttonName: string) => void
+    setInactiveButtons: (buttonNames: string[]) => void
 };
 
 function Grid(props: GridProps): ReactElement {
@@ -36,11 +35,15 @@ function Grid(props: GridProps): ReactElement {
     };
 
     const reportSelect = (): void => {
-        if (countSelected() === 4) {
-            props.activateButton("submit");
-        } else {
-            props.deactivateButton("submit");
+        const inactiveButtonsToSet: string[] = [];
+        const numSelected = countSelected();
+        if (numSelected < 4) {
+            inactiveButtonsToSet.push("submit");
         }
+        if (numSelected < 1) {
+            inactiveButtonsToSet.push("deselect");
+        }
+        props.setInactiveButtons(inactiveButtonsToSet);
     }
 
     return (

@@ -39,14 +39,14 @@ function GameControlsBar(props: GameControlsBarProps): ReactElement {
     return (
         <div className="game-controls-bar">
             <div />
-            <div className={submitClassList} onClick={() => handleClick("submit")}>
-                Submit
+            <div className={deselectClassList} onClick={() => handleClick("deselect")}>
+                Deselect
             </div>
             <div className={shuffleClassList} onClick={() => handleClick("shuffle")}>
                 Shuffle
             </div>
-            <div className={deselectClassList} onClick={() => handleClick("deselect")}>
-                Deselect
+            <div className={submitClassList} onClick={() => handleClick("submit")}>
+                Submit
             </div>
             <div />
         </div>

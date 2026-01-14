@@ -4,103 +4,60 @@ import Grid from "./grid";
 import GuessesBar from "./guessesBar";
 import GameControlsBar from "./gameControlsBar";
 import GameAlertBox from "./gameAlertBox";
+import TitleBlock from "./titleBlock";
+import GameEndModal from "./GameEndModal";
+import Create from "./create";
+import { reportWin, reportLoss } from "../api/query";
 import { shuffleInPlace, arrDeleteVal } from "../util";
-import { gameStates } from "../sampleGameStates";
 import type { GameState, Item, Group } from "../types";
 
-const sampleGameState: GameState = {
-    groups: [
-        {
-            color: "green",
-            category: "colors",
-            items: [
-                { id: 0, label: "orange", selected: false },
-                { id: 1, label: "blue", selected: false },
-                { id: 2, label: "green", selected: false },
-                { id: 3, label: "red", selected: false }
-            ],
-            finished: false
-        },
-        {
-            color: "yellow",
-            category: "bond movies",
-            items: [
-                { id: 4, label: "Goldfinger", selected: false },
-                { id: 5, label: "Skyfall", selected: false },
-                { id: 6, label: "Casino Royale", selected: false },
-                { id: 7, label: "Octopussy", selected: false }
-            ],
-            finished: false
-        },
-        {
-            color: "purple",
-            category: "ships",
-            items: [
-                { id: 8, label: "Enterprise", selected: false },
-                { id: 9, label: "Constitution", selected: false },
-                { id: 10, label: "Queen Mary", selected: false },
-                { id: 11, label: "Eclipse", selected: false }
-            ],
-            finished: false
-        },
-        {
-            color: "blue",
-            category: "First words in book titles",
-            items: [
-                { id: 12, label: "Anna", selected: false },
-                { id: 13, label: "Crime", selected: false },
-                { id: 14, label: "Winnie", selected: false },
-                { id: 15, label: "Great", selected: false }
-            ],
-            finished: false
-        }
-    ],
-    looseItemsByRow: [],
-    guessed: [],
-    remainingGuesses: 4
+type GameContainerProps = {
+    gameState: GameState,
+    getNewPuzzle: () => void
 };
 
-function getNum(rangeSize: number): number {
-    return Math.floor(rangeSize * Math.random());
-}
+function GameContainer(props: GameContainerProps): ReactElement {
+    const [createMode, setCreateMode] = useState(false);
 
-function GameContainer(): ReactElement {
-    // const gameState: GameState = gameStates[Math.floor(gameStates.length * Math.random())];
-    // let gameState: GameState;
-    // const gameState: GameState = gameStates[getNum(gameStates.length)];
-    // useEffect(() => {
-    //     gameState = gameStates[getNum(gameStates.length)];
-    // }, []);
+    const [gameState, setGameState] = useState<GameState>(props.gameState);
 
-    const [gameState, setGameState] = useState<GameState>(gameStates[getNum(gameStates.length)]);
-
+    const [gameEndModalOpen, setGameEndModalOpen] = useState(false);
     const [pokeNum, setPokeNum] = useState(0);
     const [remainingGuesses, setRemainingGuesses] = useState(gameState.remainingGuesses);
     const [inactiveButtons, setInactiveButtons] = useState<string[]>(["submit"]);
     const [messagesObj, setMessagesObj] = useState<Record<any, string>>({});
-    const [gameOver, setGameOver] = useState(false);
+    const [gameOver, setGameOver] = useState<false | "win" | "lose">(false);
 
-    const shuffleAndPopulateLooseItems = (): void => {
+    
+
+    const shuffleAndPopulateLooseItems = (shuffleItems: boolean = true, newLooseItems?: Item[][]): void => {
         const looseItems: Item[] = [];
         gameState.groups.forEach((group) => {
             if (!group.finished) {
                 looseItems.push(...group.items);
             }
         });
-        shuffleInPlace(looseItems);
-        const looseItemsByRow: Item[][] = [];
-        for (let i = 0; i < looseItems.length; i += 4) {
-            looseItemsByRow.push(looseItems.slice(i, i + 4));
-        };
-        gameState.looseItemsByRow = looseItemsByRow;
+        if (shuffleItems) {
+            shuffleInPlace(looseItems);
+            const looseItemsByRow: Item[][] = [];
+            for (let i = 0; i < looseItems.length; i += 4) {
+                looseItemsByRow.push(looseItems.slice(i, i + 4));
+            };
+            gameState.looseItemsByRow = looseItemsByRow;
+
+        } else {
+            gameState.looseItemsByRow = newLooseItems!;
+        }
         setPokeNum(Math.random());
     };
 
-    useEffect(shuffleAndPopulateLooseItems, []);
+    useEffect(shuffleAndPopulateLooseItems, [gameOver]);
 
     const deactivateButton = (buttonName: string): void => {
         const newInactiveButtons = inactiveButtons.map(ele => ele);
-        newInactiveButtons.push(buttonName);
+        if (!newInactiveButtons.includes(buttonName)) {
+            newInactiveButtons.push(buttonName);
+        }
         setInactiveButtons(newInactiveButtons);
     };
     const activateButton = (buttonName: string): void => {
@@ -126,7 +83,6 @@ function GameContainer(): ReactElement {
         newGroups.push(group);
         newGroups.push(...unfinishedGroups);
         gameState.groups = newGroups;
-        // ANIMATE SWITCHEROO!!!!
         const winningIds: number[] = [];
         group.items.forEach((item) => {
             winningIds.push(item.id);
@@ -151,12 +107,17 @@ function GameContainer(): ReactElement {
             switchPairIds.push([needToMoveDownIds[i], needToMoveUpIds[i]]);
         }
         switchElementsByIdPairs(switchPairIds).then(() => {
-            shuffleAndPopulateLooseItems();
+            const newLooseItemsByRow = determineNewLooseItemsByRow(switchPairIds, gameState.looseItemsByRow);
+            shuffleAndPopulateLooseItems(false, newLooseItemsByRow);
         });
-        // END ANIMATE SWITCHEROO!!!!
     };
 
-    const endGame = (): void => {
+    const endGame = (result: "win" | "lose"): void => {
+        if (result === "win") {
+            reportWin(gameState.info.id);
+        } else {
+            reportLoss(gameState.info.id);
+        }
         const groupsToFinish: Group[] = [];
         gameState.groups.forEach((group) => {
             if (!group.finished) {
@@ -164,7 +125,8 @@ function GameContainer(): ReactElement {
             }
         });
         finishGroupsRecursive(groupsToFinish, 0).then(() => {
-            setGameOver(true);
+            setGameOver(result);
+            setGameEndModalOpen(true);
         });
     };
 
@@ -207,6 +169,11 @@ function GameContainer(): ReactElement {
                 if (groupSelected) {
                     finishGroup(group);
                     winnerFound = true;
+                    setTimeout(() => {
+                        if (gameState.looseItemsByRow.length === 0) {
+                            endGame("win");
+                        }
+                    }, 2500);
                 }
             });
             if (!winnerFound) {
@@ -240,7 +207,7 @@ function GameContainer(): ReactElement {
                             setRemainingGuesses(gameState.remainingGuesses);
                             if (gameState.remainingGuesses < 1) {
                                 setTimeout(() => {
-                                    endGame();
+                                    endGame("lose");
                                 }, 0);
                             } else {
                                 activateButton("submit");
@@ -276,9 +243,35 @@ function GameContainer(): ReactElement {
         });
     };
 
+    const fetchAndStartNewGame = (): void => {
+        setGameOver(false);
+        props.getNewPuzzle();
+        setInactiveButtons(["submit"]);
+    };
+
+    const switchToCreateMode = (): void => {
+        setCreateMode(true);
+    };
+    const switchToPlayMode = (): void => {
+        setCreateMode(false);
+    };
+    const resetCreate = (): void => {
+        setCreateMode(false);
+        setTimeout(() => {
+            setCreateMode(true);
+        }, 0);
+    };
+
+    if (createMode) {
+        return (
+            <Create exitCreate={switchToPlayMode} reset={resetCreate} />
+        );
+    }
+
     return (
         <div className="game-container">
             <GameAlertBox messagesObj={messagesObj} />
+            <TitleBlock title={props.gameState.info.title} author={props.gameState.info.author} />
             <div>
                 <br />
                 Create groups of four!
@@ -289,13 +282,51 @@ function GameContainer(): ReactElement {
             <Grid
                 gameState={gameState}
                 pokeNum={pokeNum}
-                activateButton={activateButton}
-                deactivateButton={deactivateButton}
+                setInactiveButtons={setInactiveButtons}
             />
             {gameOver ? (
                 <div>
                     <br />
-                    GAME OVER
+                    {gameOver === "win" ? (
+                        <>
+                            <div>
+                                GOOD JOB!
+                            </div>
+                            {gameEndModalOpen && (
+                                <GameEndModal
+                                    closeModal={() => setGameEndModalOpen(false)}
+                                    startNewGame={fetchAndStartNewGame}
+                                    switchToCreateMode={switchToCreateMode}
+                                    result={"win"}
+                                    info={props.gameState.info}
+                                />
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <div>
+                                GAME OVER
+                            </div>
+                            {gameEndModalOpen && (
+                                <GameEndModal
+                                    closeModal={() => setGameEndModalOpen(false)}
+                                    startNewGame={fetchAndStartNewGame}
+                                    switchToCreateMode={switchToCreateMode}
+                                    result={"lose"}
+                                    info={props.gameState.info}
+                                />
+                            )}
+                        </>
+                    )}
+                    <br />
+                    <div className="modal-buttons-bar">
+                        <div className="game-control-button model-button" onClick={switchToCreateMode}>
+                            Create puzzle
+                        </div>
+                        <div className="game-control-button model-button" onClick={fetchAndStartNewGame}>
+                            Play again
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <>
@@ -308,6 +339,12 @@ function GameContainer(): ReactElement {
                         deselect={deselect}
                         inactiveList={inactiveButtons}
                     />
+                    <br />
+                    <div className="modal-buttons-bar">
+                        <div className="game-control-button model-button" onClick={switchToCreateMode}>
+                            Create puzzle
+                        </div>
+                    </div>
                 </>
             )}
         </div>
@@ -374,6 +411,33 @@ function animate(ele: HTMLElement, journey: number[], startTime: number, endTime
             animate(ele, journey, startTime, endTime, startDelayTime, endDelayTime);
         });
     }
+}
+
+function determineNewLooseItemsByRow(switchPairIds: number[][], looseItemsByRow: Item[][]): Item[][] {
+    const moveDownsByMoveUps: Record<number, Item> = {};
+    const itemsById: Record<number, Item> = {};
+    looseItemsByRow.forEach((row) => {
+        row.forEach((item) => {
+            itemsById[item.id] = item;
+        });
+    });
+    switchPairIds.forEach((pair) => {
+        moveDownsByMoveUps[pair[1]] = itemsById[pair[0]];
+    });
+    const moveUpIds = Object.keys(moveDownsByMoveUps);
+    const moveDownsById: Record<number, Item> = {};
+    looseItemsByRow[0].forEach((item) => {
+        moveDownsById[item.id] = item;
+    });
+    const answer = looseItemsByRow.slice(1, looseItemsByRow.length);
+    answer.forEach((row, i) => {
+        row.forEach((item, j) => {
+            if (moveUpIds.includes(item.id.toString())) {
+                answer[i][j] = moveDownsByMoveUps[item.id];
+            }
+        });
+    });
+    return answer;
 }
 
 export default GameContainer;

@@ -1,12 +1,12 @@
 import React from 'react';
 import './App.css';
-import GameContainer from "./components/gameContainer";
+import PuzzleSelector from "./components/puzzleSelector";
 
 function App() {
   return (
     <div className="App">
 
-      <GameContainer />
+      <PuzzleSelector />
     </div>
   );
 }
