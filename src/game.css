@@ -276,3 +276,36 @@
     margin-top: 1vw;
     margin-bottom: 1vw;
 }
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-container {
+    height: 8vw;
+    position: relative;
+    padding-left: 2vw;
+}
+
+.sym-rect {
+    position: absolute;
+    left: 50%;
+    top: 20%;
+    height: 4vw;
+    width: 2.5vw;
+    border: 0.75vw solid darkgray;
+    border-radius: 1vw;
+}
+
+.offset {
+    transform: translate(20%, -20%);
+    border: 0.75vw solid gray;
+}
+
+.shortened-link {
+    max-width: 85vw;
+    overflow: hidden;
+}

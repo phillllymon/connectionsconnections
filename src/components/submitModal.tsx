@@ -1,6 +1,7 @@
 import React, { ReactElement, useState } from 'react';
 import GridRow from "./gridRow";
 import TitleBlock from "./titleBlock";
+import CopiableLink from "./copiableLink";
 import type { Group, PuzzleData } from "../types";
 import { addPuzzle } from "../api/query";
 import "../game.css";
@@ -57,7 +58,7 @@ function SubmitModal(props: SubmitModalProps): ReactElement {
                     Here's a link to your puzzle:
                     <br />
                     <br />
-                    {window.location.href.split("?")[0]}?id={puzzleId}
+                    <CopiableLink link={`${window.location.href.split("?")[0]}?id=${puzzleId}`} />
                     <br />
                     <br />
                     <div className="modal-buttons-bar">

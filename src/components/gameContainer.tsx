@@ -7,6 +7,7 @@ import GameAlertBox from "./gameAlertBox";
 import TitleBlock from "./titleBlock";
 import GameEndModal from "./GameEndModal";
 import Create from "./create";
+import CopiableLink from "./copiableLink";
 import { reportWin, reportLoss } from "../api/query";
 import { shuffleInPlace, arrDeleteVal } from "../util";
 import type { GameState, Item, Group } from "../types";
@@ -327,6 +328,9 @@ function GameContainer(props: GameContainerProps): ReactElement {
                             Play again
                         </div>
                     </div>
+                    <br />
+                    Share this puzzle:
+                    <CopiableLink link={`connectionsconnections.com?id=${gameState.info.id}`} />
                 </div>
             ) : (
                 <>
@@ -345,6 +349,9 @@ function GameContainer(props: GameContainerProps): ReactElement {
                             Create puzzle
                         </div>
                     </div>
+                    <br />
+                    Share this puzzle:
+                    <CopiableLink link={`connectionsconnections.com?id=${gameState.info.id}`} />
                 </>
             )}
         </div>
