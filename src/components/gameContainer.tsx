@@ -275,8 +275,6 @@ function GameContainer(props: GameContainerProps): ReactElement {
             <TitleBlock title={props.gameState.info.title} author={props.gameState.info.author} />
             <div>
                 <br />
-                Create groups of four!
-                <br />
                 <br />
 
             </div>
